@@ -49,10 +49,12 @@ class AuthController extends Controller
         }
 
         $user = Auth::user();
+        $role = UserRole::find($user->role_id)->role;
         return response()->json([
             'status' => 'success',
             'body' => [
                 'user' => $user,
+                'role' => $role,
                 'authorization' => [
                     'token' => $token,
                     'type' => 'bearer',

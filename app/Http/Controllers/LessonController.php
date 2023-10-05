@@ -14,7 +14,8 @@ class LessonController extends Controller
         $this->middleware('auth:api', ['except' => []]);
     }
 
-    public function getLesson(Request $request){
+    public function getLesson(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'id' => 'required|integer|exists:lessons,id',
         ]);
@@ -29,19 +30,23 @@ class LessonController extends Controller
         $lesson = Lesson::find($request->id);
 
         $fileService = new FileService();
-        $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->filePath, 'json');      
+        $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->filePath, 'json');
         $file = $fileService->getFile($path);
-        
-        if (!$file) return response()->json(['status' => 'file not found'], 404);
+
+        if (!$file)
+            return response()->json(['status' => 'file not found'], 404);
 
         return response()->json(['status' => 'success', 'content' => $file]);
     }
-    
-    public function createLesson(Request $request){
+
+    public function createLesson(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'type' => 'required|string',
             'fileId' => 'required|string',
-            'content' => 'required|json', // todo дз
+            'name' => 'required|string',
+            'description' => 'required|string',
+            'content' => 'required|json',
         ]);
 
         if ($validator->fails()) {
@@ -51,8 +56,16 @@ class LessonController extends Controller
             ], 422);
         }
         
+        $newLesson = Lesson::create([
+            'teacherId' => auth()->id(),
+            'type' => $request->type,
+            'name' => $request->name,
+            'description' => $request->description,
+            'fileId' => $request->fileId
+        ]);
+
         $fileService = new FileService();
-        $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');      
+        $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');
         $fileService->saveFile($path, $request->content);
 
         return response()->json(['status' => 'success']);

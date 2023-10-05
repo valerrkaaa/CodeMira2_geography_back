@@ -40,4 +40,5 @@ Route::group([
     'middleware' => 'api'
 ], function ($router) {
     Route::get('lesson', [LessonController::class, 'getLesson']);
+    Route::post('create_lesson', [LessonController::class, 'createLesson']);
 });

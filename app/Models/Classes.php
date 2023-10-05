@@ -6,17 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ClassName extends Model
+class Classes extends Model
 {
     use HasFactory, SoftDeletes;
 
     public function pupils(){
-        return $this->hasMany(Classes::class);
+        return $this->hasMany(User::class);
     }
-
-    // public function pupils(){
-    //     return $this->hasManyThrough(User::class, Classes::class);
-    // }
 
     protected $hidden = [
         'created_at',

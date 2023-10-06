@@ -57,6 +57,43 @@ class LessonController extends Controller
         return response()->json(['status' => 'success', 'lessons' => $output]);
     }
 
+    public function getOwnLesson(Request $request){
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:lessons,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'validator error',
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
+        }
+
+        $lesson = Lesson::find($request->id)->first();
+        if ($lesson->teacherId != auth()->id()){
+            return response()->json(['status' => 'permission denied'], 403);
+        }
+
+        $fileService = new FileService();
+        $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->fileId, 'json');
+        $rawFile = $fileService->getFile($path);
+
+        if (!$rawFile)
+            return response()->json(['status' => 'file not found'], 404);
+
+        $file = json_decode($rawFile);
+
+        $output = [
+            "map" => $file->map,
+            "pieces" => $file->pieces,
+            "name" => $lesson->name,
+            "description" => $lesson->description,
+            "fileId" => $lesson->fileId
+        ];
+
+        return response()->json(['status' => 'success', 'content' => $output]);
+    }
+
     public function getLesson(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -118,6 +155,36 @@ class LessonController extends Controller
         $fileService = new FileService();
         $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');
         $fileService->saveFile($path, $request->content);
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function updateLesson(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer',
+            'type' => 'required|string',
+            'fileId' => 'required|string',
+            'name' => 'required|string',
+            'content' => 'required|json',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'validator error',
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
+        }
+
+        $lesson = Lesson::find($request->id)->first();
+        if (!$lesson){
+            return response()->json(['status' => 'lesson not found'], 404);
+        }
+        $lesson->type = $request->type;
+        $lesson->fileId = $request->fileId;
+        $lesson->name = $request->name;
+        $lesson->content = $request->content;
+        $lesson->save();
 
         return response()->json(['status' => 'success']);
     }

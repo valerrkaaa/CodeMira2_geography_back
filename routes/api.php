@@ -35,6 +35,10 @@ Route::group([
     Route::get('pupil', [PupilsController::class, 'getPupil']);
     Route::get('homework', [HomeworkController::class, 'getHomework']);
     Route::get('teacher_lessons', [LessonController::class, 'getTeacherLessons']);
+
+    Route::get('get_own_lesson', [LessonController::class, 'getOwnLesson']);
+    Route::post('create_lesson', [LessonController::class, 'createLesson']);
+    Route::post('update_lesson', [LessonController::class, 'updateLesson']);
 });
 
 Route::group([
@@ -42,6 +46,5 @@ Route::group([
 ], function ($router) {
     Route::get('lessons', [LessonController::class, 'getLessons']);
     Route::get('lesson', [LessonController::class, 'getLesson']);
-    Route::post('create_lesson', [LessonController::class, 'createLesson']);
     Route::post('send_homework_answer', [LessonController::class, 'sendHomeworkAnswer']);
 });

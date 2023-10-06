@@ -17,4 +17,10 @@ class Lesson extends Model
         'description',
         'fileId',
     ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
 }

@@ -14,6 +14,48 @@ class LessonController extends Controller
         $this->middleware('auth:api', ['except' => []]);
     }
 
+    public function getLessons(Request $request)
+    {
+        $lessons = Lesson::all();
+        $fileService = new FileService();
+
+        $output = [];
+        foreach ($lessons as $lesson) {
+            $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->fileId, 'json');
+            $file = json_decode($fileService->getFile($path));
+            $photo = $file->map;
+            array_push($output, [
+                'id' => $lesson->id,
+                'type' => $lesson->type,
+                'name' => $lesson->name,
+                'photo' => $photo
+            ]);
+        }
+
+        return response()->json(['status' => 'success', 'lessons' => $output]);
+    }
+
+    public function getTeacherLessons(Request $request)
+    {
+        $lessons = Lesson::all()->where('teacherId', auth()->id());
+        $fileService = new FileService();
+
+        $output = [];
+        foreach ($lessons as $lesson) {
+            $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->fileId, 'json');
+            $file = json_decode($fileService->getFile($path));
+            $photo = $file->map;
+            array_push($output, [
+                'id' => $lesson->id,
+                'type' => $lesson->type,
+                'name' => $lesson->name,
+                'photo' => $photo
+            ]);
+        }
+
+        return response()->json(['status' => 'success', 'lessons' => $output]);
+    }
+
     public function getLesson(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -30,13 +72,21 @@ class LessonController extends Controller
         $lesson = Lesson::find($request->id);
 
         $fileService = new FileService();
-        $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->filePath, 'json');
-        $file = $fileService->getFile($path);
+        $path = $fileService->buildPath('lessons', $lesson->teacherId, $lesson->fileId, 'json');
+        $rawFile = $fileService->getFile($path);
 
-        if (!$file)
+        if (!$rawFile)
             return response()->json(['status' => 'file not found'], 404);
 
-        return response()->json(['status' => 'success', 'content' => $file]);
+        $file = json_decode($rawFile);
+
+        $output = [
+            "map" => $file->map,
+            "name" => $lesson->name,
+            "description" => $lesson->description
+        ];
+
+        return response()->json(['status' => 'success', 'content' => $output]);
     }
 
     public function createLesson(Request $request)
@@ -55,7 +105,7 @@ class LessonController extends Controller
                 'errors' => $validator->errors()->toArray(),
             ], 422);
         }
-        
+
         $newLesson = Lesson::create([
             'teacherId' => auth()->id(),
             'type' => $request->type,
@@ -67,6 +117,34 @@ class LessonController extends Controller
         $fileService = new FileService();
         $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');
         $fileService->saveFile($path, $request->content);
+
+        return response()->json(['status' => 'success']);
+    }
+
+    public function sendHomeworkAnswer(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'map' => 'required|string',
+            'pieces' => 'required|array',
+            'lesson_id' => 'required|integer',
+            'fileId' => 'required|string'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'validator error',
+                'errors' => $validator->errors()->toArray(),
+            ], 422);
+        }
+
+        $file = json_encode([
+            'map' => $request->map,
+            'pieces' => $request->pieces,
+        ]);
+
+        $fileService = new FileService();
+        $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');
+        $fileService->saveFile($path, $file);
 
         return response()->json(['status' => 'success']);
     }

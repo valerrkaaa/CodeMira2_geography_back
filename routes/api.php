@@ -34,11 +34,14 @@ Route::group([
     Route::get('pupils', [PupilsController::class, 'getPupilList']);
     Route::get('pupil', [PupilsController::class, 'getPupil']);
     Route::get('homework', [HomeworkController::class, 'getHomework']);
+    Route::get('teacher_lessons', [LessonController::class, 'getTeacherLessons']);
 });
 
 Route::group([
     'middleware' => 'api'
 ], function ($router) {
+    Route::get('lessons', [LessonController::class, 'getLessons']);
     Route::get('lesson', [LessonController::class, 'getLesson']);
     Route::post('create_lesson', [LessonController::class, 'createLesson']);
+    Route::post('send_homework_answer', [LessonController::class, 'sendHomeworkAnswer']);
 });

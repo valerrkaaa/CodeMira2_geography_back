@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Classes;
 use App\Models\ClassName;
 use App\Models\LessonAnswer;
 use App\Models\User;
@@ -55,5 +56,20 @@ class PupilsController extends Controller
         $homeworks = LessonAnswer::where('pupil_id', $request->id);
 
         return response()->json(['status' => 'success', 'content' => $homeworks]);
+    }
+    
+    public function getClassList(Request $request){
+        
+        $classes = ClassName::with('classes')->get();
+        
+        $output = [];  // сам знаю, полный ужас, времени нет
+        foreach ($classes as $class){
+            $temp = [];
+            foreach ($class->classes as $pupil){
+                array_push($temp, User::find($pupil->pupil_id));
+            }
+            array_push($output, ["id" => $class->id, "name" => $class->name, "pupils" => $temp]);
+        }
+        return response()->json(['status' => 'success', 'data' => $output]);
     }
 }

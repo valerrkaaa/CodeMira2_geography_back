@@ -15,4 +15,8 @@ class FileService
     public function saveFile($path, $content){
         return Storage::put($path, $content);
     }
+
+    public function deleteFile($path){
+        return Storage::delete($path);
+    }
 }

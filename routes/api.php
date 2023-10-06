@@ -30,21 +30,24 @@ Route::group([
 Route::group([
     'middleware' => ['api', 'role:teacher'],
 ], function ($router) {
+    Route::get('class_list', [PupilsController::class, 'getClassList']);
     Route::get('classes', [PupilsController::class, 'getClassesList']);
     Route::get('pupils', [PupilsController::class, 'getPupilList']);
     Route::get('pupil', [PupilsController::class, 'getPupil']);
-    Route::get('homework', [HomeworkController::class, 'getHomework']);
-    Route::get('teacher_lessons', [LessonController::class, 'getTeacherLessons']);
 
+    Route::get('teacher_lessons', [LessonController::class, 'getTeacherLessons']);
     Route::get('get_own_lesson', [LessonController::class, 'getOwnLesson']);
     Route::post('create_lesson', [LessonController::class, 'createLesson']);
     Route::post('update_lesson', [LessonController::class, 'updateLesson']);
+    Route::delete('lesson', [LessonController::class, 'deleteLesson']);
+
+    Route::get('homework', [HomeworkController::class, 'getHomework']);
 });
 
 Route::group([
     'middleware' => 'api'
 ], function ($router) {
-    Route::get('lessons', [LessonController::class, 'getLessons']);
-    Route::get('lesson', [LessonController::class, 'getLesson']);
-    Route::post('send_homework_answer', [LessonController::class, 'sendHomeworkAnswer']);
+    Route::get('homework_list', [HomeworkController::class, 'getHomeworkListApi']);
+    Route::get('homework_item', [HomeworkController::class, 'getHomeworkItem']);
+    Route::post('send_homework_answer', [HomeworkController::class, 'sendHomeworkAnswer']);
 });

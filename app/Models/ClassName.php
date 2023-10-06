@@ -10,13 +10,9 @@ class ClassName extends Model
 {
     use HasFactory, SoftDeletes;
 
-    public function pupils(){
+    public function classes(){
         return $this->hasMany(Classes::class);
     }
-
-    // public function pupils(){
-    //     return $this->hasManyThrough(User::class, Classes::class);
-    // }
 
     protected $hidden = [
         'created_at',

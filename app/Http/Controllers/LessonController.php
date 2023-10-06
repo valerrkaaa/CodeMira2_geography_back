@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lesson;
+use App\Models\LessonAnswer;
 use App\Services\Files\FileService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -82,6 +83,7 @@ class LessonController extends Controller
 
         $output = [
             "map" => $file->map,
+            "pieces" => $file->pieces,
             "name" => $lesson->name,
             "description" => $lesson->description
         ];
@@ -95,7 +97,6 @@ class LessonController extends Controller
             'type' => 'required|string',
             'fileId' => 'required|string',
             'name' => 'required|string',
-            'description' => 'required|string',
             'content' => 'required|json',
         ]);
 
@@ -110,7 +111,7 @@ class LessonController extends Controller
             'teacherId' => auth()->id(),
             'type' => $request->type,
             'name' => $request->name,
-            'description' => $request->description,
+            'description' => $request->description ? $request->description : "",
             'fileId' => $request->fileId
         ]);
 
@@ -145,6 +146,12 @@ class LessonController extends Controller
         $fileService = new FileService();
         $path = $fileService->buildPath('lessons', auth()->id(), $request->fileId, 'json');
         $fileService->saveFile($path, $file);
+
+        $newAnswer = LessonAnswer::create([
+            'lesson_id' => $request->lesson_id,
+            'pupil_id' => auth()->id(),
+            'fileId' => $request->fileId,
+        ]);
 
         return response()->json(['status' => 'success']);
     }

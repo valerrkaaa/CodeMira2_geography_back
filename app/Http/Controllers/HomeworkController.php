@@ -35,7 +35,7 @@ class HomeworkController extends Controller
 
     public function getHomeworkListApi(Request $request)
     {
-        $lessons = Lesson::all();
+        $lessons = Lesson::orderBy('id')->get();
         $fileService = new FileService();
 
         $output = [];
